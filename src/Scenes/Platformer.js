@@ -27,9 +27,23 @@ class Platformer extends Phaser.Scene {
     win() {
         this.scene.start('WinningScene');
     }
-
+    preload(){
+        //Doing this solely for the coin sprite. Can't find a better way to do this lol
+        this.load.path = "./assets/"
+        this.load.spritesheet("tilemap_sheet", "tilemap_packed.png", {
+            frameWidth: 18,
+            frameHeight: 18
+        })
+    }
     create() {
 
+        //coin animation
+        this.anims.create({
+            key: 'coinAnim',
+            frames: this.anims.generateFrameNumbers('tilemap_sheet', {start: 151, end: 152}),
+            repeat: -1,
+            frameRate: 5
+        })
 
         // Set world bounds to match the scaled tilemap size
         this.physics.world.setBounds(0, 0, this.mapWidth, this.mapHeight);
@@ -47,14 +61,12 @@ class Platformer extends Phaser.Scene {
         // Create a layer
         this.backgroundLayer = this.map.createLayer("Background", this.backgroundTileset, 0, 0);
         this.groundLayer = this.map.createLayer("Ground-n-Platforms", this.tileset, 0, 0);
-        this.coinLayer = this.map.createLayer("Coins", this.tileset, 0, 0);
         this.obstacleLayer = this.map.createLayer("Obstacles", this.tileset, 0, 0);
         this.winLayer = this.map.createLayer("Winning", this.tileset, 0, 0);
         this.winLayer.setScale(2.0);
         this.obstacleLayer.setScale(2.0);
         this.groundLayer.setScale(2.0);
         this.backgroundLayer.setScale(2.0);
-        this.coinLayer.setScale(2.0);
 
         // Make it collidable
         this.groundLayer.setCollisionByProperty({
@@ -68,11 +80,29 @@ class Platformer extends Phaser.Scene {
         this.winLayer.setCollisionByProperty({
             collides: true
         });
-        //player can collide with coins
-        this.coinLayer.setCollisionByProperty({
-            collides: true
-        });
 
+        //make all coins
+        this.coins = this.map.createFromObjects("Coins", {
+            key: "tilemap_sheet",
+            frame: 151
+        });
+        //scale the coins
+        for(let coin of this.coins){
+            coin.setScale(2.0);
+            coin.x = coin.x * 2;
+            coin.y = coin.y * 2;
+        }
+        //add coins to a sprite group
+        this.coinGroup = this.add.group(this.coins);
+        //create physics for coins
+        this.physics.world.enable(this.coins, Phaser.Physics.Arcade.STATIC_BODY);
+        this.coins.map((coin) => {
+            coin.body.setCircle(12).setOffset(6, 6);
+        });
+        //add animation to coins
+        this.coinGroup.children.iterate((coin)=>{
+            coin.play('coinAnim');
+        })
         // set up player avatar
         my.sprite.player = this.physics.add.sprite(10, game.config.height/2+550, "platformer_characters", "tile_0004.png").setScale(1.5);
         my.sprite.player.setCollideWorldBounds(true);
@@ -87,14 +117,23 @@ class Platformer extends Phaser.Scene {
         this.physics.add.collider(my.sprite.player, this.groundLayer);
         this.physics.add.collider(my.sprite.player, this.obstacleLayer, this.gameOver);
         this.physics.add.collider(my.sprite.player, this.winLayer, this.win);
-        this.physics.add.collider(my.sprite.player, this.coins, () => {
-            console.log('coin');
+
+        //display score
+        this.score = 0;
+        my.text.score = this.add.text(370, 250, `Coins collected: ${ this.score }/5`, { 
+            fontFamily: 'sans-serif',
+            fontSize: '18px',
+            color: '#000000'
+        }).setScrollFactor(0);
+        //coins and player should overlap not collide
+        this.physics.add.overlap(my.sprite.player, this.coinGroup, (obj1, obj2) => {
+            obj2.destroy();
+            this.score += 1;
+            my.text.score.setText(`Coins collected: ${ this.score }/5`);
         });
 
         // set up Phaser-provided cursor key input
         cursors = this.input.keyboard.createCursorKeys();
-        
-        
 
     }
 
