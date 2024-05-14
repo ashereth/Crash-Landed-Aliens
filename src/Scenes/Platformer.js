@@ -77,17 +77,20 @@ class Platformer extends Phaser.Scene {
         // Create a layer
         this.backgroundLayer = this.map.createLayer("Background", this.backgroundTileset, 0, 0);
         this.groundLayer = this.map.createLayer("Ground-n-Platforms", this.tileset, 0, 0);
+        this.extraLayer = this.map.createLayer("Extra", this.tileset, 0, 0);
         this.obstacleLayer = this.map.createLayer("Obstacles", this.tileset, 0, 0);
         this.winLayer = this.map.createLayer("Winning", this.tileset, 0, 0);
         this.winLayer.setScale(2.0);
         this.obstacleLayer.setScale(2.0);
-        this.groundLayer.setScale(2.0);
         this.backgroundLayer.setScale(2.0);
+        this.extraLayer.setScale(2.0)
+        this.groundLayer.setScale(2.0);
 
-        // Make it collidable
+        //set collides for ground
         this.groundLayer.setCollisionByProperty({
             collides: true
         });
+
         //set collides for obstacles
         this.obstacleLayer.setCollisionByProperty({
             collides: true
@@ -107,20 +110,24 @@ class Platformer extends Phaser.Scene {
             this.physics.world.enable(sprite);
             sprite.body.setAllowGravity(false);
             sprite.body.setSize(20, 15);
-            sprite
+            sprite.setScale(1.7);
             this.flyGroup.add(sprite);
         });
         //play the animation for each fly
         this.flyGroup.children.iterate((fly)=>{
             fly.play('flyAnim');
         });
-    
+        //coverup weird stuff
+        this.coverupLayer = this.map.createLayer("Coverup", this.tileset, 0, 0);
+        this.coverupLayer.setScale(2.0);
+        this.coverupLayer2 = this.map.createLayer("CoverupSky", this.backgroundTileset, 0, 0);
+        this.coverupLayer2.setScale(2.0);
         //make all coins and make them look like coins
         this.coins = this.map.createFromObjects("Coins", {
             key: "tilemap_sheet",
             frame: 151
         });
-        //scale the coins
+        //scale the coins and place them correctly
         for(let coin of this.coins){
             coin.setScale(2.0);
             coin.x = coin.x * 2;
@@ -155,8 +162,8 @@ class Platformer extends Phaser.Scene {
         this.physics.add.collider(this.flyGroup, this.groundLayer);
         this.physics.add.collider(this.flyGroup, my.sprite.player, this.gameOver);
         //display score
-        this.score = 0;
-        my.text.score = this.add.text(370, 250, `Coins collected: ${ this.score }/5`, { 
+        this.coinsCollected = 0;
+        my.text.coinsCollected = this.add.text(370, 250, `Coins collected: ${ this.coinsCollected }/5`, { 
             fontFamily: 'sans-serif',
             fontSize: '18px',
             color: '#000000'
@@ -164,8 +171,8 @@ class Platformer extends Phaser.Scene {
         //coins and player should overlap not collide
         this.physics.add.overlap(my.sprite.player, this.coinGroup, (obj1, obj2) => {
             obj2.destroy();
-            this.score += 1;
-            my.text.score.setText(`Coins collected: ${ this.score }/5`);
+            this.coinsCollected += 1;
+            my.text.coinsCollected.setText(`Coins collected: ${ this.coinsCollected }/5`);
         });
 
         // set up Phaser-provided cursor key input
