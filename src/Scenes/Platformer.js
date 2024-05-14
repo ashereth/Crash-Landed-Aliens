@@ -81,7 +81,7 @@ class Platformer extends Phaser.Scene {
             collides: true
         });
 
-        //make all coins
+        //make all coins and make them look like coins
         this.coins = this.map.createFromObjects("Coins", {
             key: "tilemap_sheet",
             frame: 151
@@ -108,6 +108,7 @@ class Platformer extends Phaser.Scene {
         my.sprite.player.setCollideWorldBounds(true);
         //set a max speed for the player
         my.sprite.player.setMaxVelocity(this.maxSpeed_X, this.maxSpeed_Y);
+        my.sprite.player.body.setSize(20, 20);
         // Get the current camera and configure it to follow the player
         this.cameras.main.startFollow(my.sprite.player, true, .1, .1);
 
@@ -134,6 +135,12 @@ class Platformer extends Phaser.Scene {
 
         // set up Phaser-provided cursor key input
         cursors = this.input.keyboard.createCursorKeys();
+
+        // debug key listener (assigned to D key)
+        this.input.keyboard.on('keydown-D', function() {
+            this.physics.world.drawDebug = this.physics.world.drawDebug ? false : true
+            this.physics.world.debugGraphic.clear()
+        }, this)
 
     }
 
