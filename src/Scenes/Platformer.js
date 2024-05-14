@@ -74,7 +74,7 @@ class Platformer extends Phaser.Scene {
         });
 
         // set up player avatar
-        my.sprite.player = this.physics.add.sprite(10, game.config.height/2+550, "platformer_characters", "tile_0004.png").setScale(1.5)
+        my.sprite.player = this.physics.add.sprite(10, game.config.height/2+550, "platformer_characters", "tile_0004.png").setScale(1.5);
         my.sprite.player.setCollideWorldBounds(true);
         //set a max speed for the player
         my.sprite.player.setMaxVelocity(this.maxSpeed_X, this.maxSpeed_Y);
@@ -87,7 +87,9 @@ class Platformer extends Phaser.Scene {
         this.physics.add.collider(my.sprite.player, this.groundLayer);
         this.physics.add.collider(my.sprite.player, this.obstacleLayer, this.gameOver);
         this.physics.add.collider(my.sprite.player, this.winLayer, this.win);
-        this.physics.add.collider(my.sprite.player, this.coinLayer, console.log('coin'));
+        this.physics.add.collider(my.sprite.player, this.coins, () => {
+            console.log('coin');
+        });
 
         // set up Phaser-provided cursor key input
         cursors = this.input.keyboard.createCursorKeys();
