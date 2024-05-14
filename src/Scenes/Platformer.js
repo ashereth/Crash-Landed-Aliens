@@ -34,6 +34,10 @@ class Platformer extends Phaser.Scene {
             frameWidth: 18,
             frameHeight: 18
         })
+        this.load.spritesheet("character_sheet", "tilemap-characters-packed.png", {
+            frameWidth: 18,
+            frameHeight: 18
+        })
     }
     create() {
 
@@ -43,7 +47,19 @@ class Platformer extends Phaser.Scene {
             frames: this.anims.generateFrameNumbers('tilemap_sheet', {start: 151, end: 152}),
             repeat: -1,
             frameRate: 5
-        })
+        });
+        //fly animation
+        this.anims.create({
+            key: 'flyAnim',
+            frames: [
+                { key: 'platformer_characters', frame: 'tile_0025.png' },
+                { key: 'platformer_characters', frame: 'tile_0024.png' },
+                { key: 'platformer_characters', frame: 'tile_0025.png' },
+                { key: 'platformer_characters', frame: 'tile_0026.png' }
+            ],
+            frameRate: 7,
+            repeat: -1
+        });
 
         // Set world bounds to match the scaled tilemap size
         this.physics.world.setBounds(0, 0, this.mapWidth, this.mapHeight);
@@ -81,6 +97,24 @@ class Platformer extends Phaser.Scene {
             collides: true
         });
 
+        //make fly enemies
+        this.flies = this.map.createFromObjects("FlyEnemies");
+        //make a sprite group to hold flies
+        this.flyGroup = this.add.group();
+        //make all the fly sprites and add them to the fly group
+        this.flies.forEach(fly => {
+            const sprite = this.add.sprite(fly.x*2, fly.y*2, 'platformer_characters', "tile_0025.png");
+            this.physics.world.enable(sprite);
+            sprite.body.setAllowGravity(false);
+            sprite.body.setSize(20, 15);
+            sprite
+            this.flyGroup.add(sprite);
+        });
+        //play the animation for each fly
+        this.flyGroup.children.iterate((fly)=>{
+            fly.play('flyAnim');
+        });
+    
         //make all coins and make them look like coins
         this.coins = this.map.createFromObjects("Coins", {
             key: "tilemap_sheet",
@@ -118,7 +152,8 @@ class Platformer extends Phaser.Scene {
         this.physics.add.collider(my.sprite.player, this.groundLayer);
         this.physics.add.collider(my.sprite.player, this.obstacleLayer, this.gameOver);
         this.physics.add.collider(my.sprite.player, this.winLayer, this.win);
-
+        this.physics.add.collider(this.flyGroup, this.groundLayer);
+        this.physics.add.collider(this.flyGroup, my.sprite.player, this.gameOver);
         //display score
         this.score = 0;
         my.text.score = this.add.text(370, 250, `Coins collected: ${ this.score }/5`, { 

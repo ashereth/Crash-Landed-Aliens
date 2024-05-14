@@ -45,7 +45,7 @@ class Load extends Phaser.Scene {
                 { frame: "tile_0005.png" }
             ],
         });
-
+        
          // ...and pass to the next Scene
          this.scene.start("platformerScene");
     }
