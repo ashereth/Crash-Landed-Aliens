@@ -16,6 +16,7 @@ class Platformer extends Phaser.Scene {
         this.mapHeight = 18 *2 * 40;
         this.maxSpeed_X = 200;
         this.maxSpeed_Y = 1000;
+        this.SCALE = 2;
     }
     //send player to game over scene
     gameOver() {
@@ -31,10 +32,6 @@ class Platformer extends Phaser.Scene {
         //Doing this solely for the coin sprite. Can't find a better way to do this lol
         this.load.path = "./assets/"
         this.load.spritesheet("tilemap_sheet", "tilemap_packed.png", {
-            frameWidth: 18,
-            frameHeight: 18
-        })
-        this.load.spritesheet("character_sheet", "tilemap-characters-packed.png", {
             frameWidth: 18,
             frameHeight: 18
         })
@@ -80,11 +77,11 @@ class Platformer extends Phaser.Scene {
         this.extraLayer = this.map.createLayer("Extra", this.tileset, 0, 0);
         this.obstacleLayer = this.map.createLayer("Obstacles", this.tileset, 0, 0);
         this.winLayer = this.map.createLayer("Winning", this.tileset, 0, 0);
-        this.winLayer.setScale(2.0);
-        this.obstacleLayer.setScale(2.0);
-        this.backgroundLayer.setScale(2.0);
-        this.extraLayer.setScale(2.0)
-        this.groundLayer.setScale(2.0);
+        this.winLayer.setScale(this.SCALE);
+        this.obstacleLayer.setScale(this.SCALE);
+        this.backgroundLayer.setScale(this.SCALE);
+        this.extraLayer.setScale(this.SCALE)
+        this.groundLayer.setScale(this.SCALE);
 
         //set collides for ground
         this.groundLayer.setCollisionByProperty({
@@ -101,51 +98,55 @@ class Platformer extends Phaser.Scene {
         });
 
         //make fly enemies
-        this.flies = this.map.createFromObjects("FlyEnemies");
-        //make a sprite group to hold flies
-        this.flyGroup = this.add.group();
-        //make all the fly sprites and add them to the fly group
-        this.flies.forEach(fly => {
-            const sprite = this.add.sprite(fly.x*2, fly.y*2, 'platformer_characters', "tile_0025.png");
-            this.physics.world.enable(sprite);
-            sprite.body.setAllowGravity(false);
-            sprite.body.setSize(20, 15);
-            sprite.setScale(1.7);
-            this.flyGroup.add(sprite);
+        this.flies = this.map.createFromObjects("Objects", {
+            name: "fly",
+            key: 'platformer_characters', 
+            frame: 'tile_0025.png'
         });
+        //scale flies
+        for(let fly of this.flies){
+            fly.setScale(this.SCALE);
+            fly.x = fly.x * this.SCALE;
+            fly.y = fly.y * this.SCALE;
+        }
+        //add physics for flies
+        this.physics.world.enable(this.flies, Phaser.Physics.Arcade.STATIC_BODY);
+        this.flies.map((fly) => {
+            fly.body.setSize(35, 18);
+        });
+        //make a sprite group to hold flies
+        this.flyGroup = this.add.group(this.flies);
         //play the animation for each fly
         this.flyGroup.children.iterate((fly)=>{
             fly.play('flyAnim');
         });
-        //coverup weird stuff
-        this.coverupLayer = this.map.createLayer("Coverup", this.tileset, 0, 0);
-        this.coverupLayer.setScale(2.0);
-        this.coverupLayer2 = this.map.createLayer("CoverupSky", this.backgroundTileset, 0, 0);
-        this.coverupLayer2.setScale(2.0);
         //make all coins and make them look like coins
-        this.coins = this.map.createFromObjects("Coins", {
+        this.coins = this.map.createFromObjects("Objects", {
+            name: "coin",
             key: "tilemap_sheet",
             frame: 151
         });
         //scale the coins and place them correctly
         for(let coin of this.coins){
-            coin.setScale(2.0);
-            coin.x = coin.x * 2;
-            coin.y = coin.y * 2;
+            coin.setScale(this.SCALE);
+            coin.x = coin.x * this.SCALE;
+            coin.y = coin.y * this.SCALE;
         }
-        //add coins to a sprite group
-        this.coinGroup = this.add.group(this.coins);
         //create physics for coins
         this.physics.world.enable(this.coins, Phaser.Physics.Arcade.STATIC_BODY);
+        //add coins to a sprite group
+        this.coinGroup = this.add.group(this.coins);
+        //set hitbox for coin to be a small circle
         this.coins.map((coin) => {
-            coin.body.setCircle(12).setOffset(6, 6);
+            coin.body.setCircle(10).setOffset(6, 6);
         });
         //add animation to coins
         this.coinGroup.children.iterate((coin)=>{
             coin.play('coinAnim');
         })
         // set up player avatar
-        my.sprite.player = this.physics.add.sprite(10, game.config.height/2+550, "platformer_characters", "tile_0004.png").setScale(1.5);
+        const spawnPoint = this.map.findObject("Objects", obj => obj.name === "spawn");
+        my.sprite.player = this.physics.add.sprite(spawnPoint.x*this.SCALE, spawnPoint.y*this.SCALE, "platformer_characters", "tile_0004.png").setScale(1.5);
         my.sprite.player.setCollideWorldBounds(true);
         //set a max speed for the player
         my.sprite.player.setMaxVelocity(this.maxSpeed_X, this.maxSpeed_Y);
@@ -159,8 +160,7 @@ class Platformer extends Phaser.Scene {
         this.physics.add.collider(my.sprite.player, this.groundLayer);
         this.physics.add.collider(my.sprite.player, this.obstacleLayer, this.gameOver);
         this.physics.add.collider(my.sprite.player, this.winLayer, this.win);
-        this.physics.add.collider(this.flyGroup, this.groundLayer);
-        this.physics.add.collider(this.flyGroup, my.sprite.player, this.gameOver);
+        this.physics.add.overlap(my.sprite.player, this.flyGroup, this.gameOver);
         //display score
         this.coinsCollected = 0;
         my.text.coinsCollected = this.add.text(370, 250, `Coins collected: ${ this.coinsCollected }/5`, { 
