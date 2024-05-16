@@ -374,7 +374,7 @@
                  "visible":true,
                  "width":18,
                  "x":765,
-                 "y":567.666666666667
+                 "y":567.667
                 }, 
                 {
                  "gid":152,
@@ -385,7 +385,7 @@
                  "type":"",
                  "visible":true,
                  "width":18,
-                 "x":700.333333333333,
+                 "x":700.333,
                  "y":339
                 }, 
                 {
@@ -398,7 +398,7 @@
                  "visible":true,
                  "width":18,
                  "x":197,
-                 "y":532.333333333333
+                 "y":532.333
                 }, 
                 {
                  "gid":152,
@@ -410,7 +410,7 @@
                  "visible":true,
                  "width":18,
                  "x":1151,
-                 "y":88.3333333333333
+                 "y":88.3333
                 }, 
                 {
                  "gid":152,
@@ -421,8 +421,8 @@
                  "type":"",
                  "visible":true,
                  "width":18,
-                 "x":1154.33333333333,
-                 "y":692.333333333333
+                 "x":1154.33,
+                 "y":692.333
                 }, 
                 {
                  "ellipse":true,
@@ -433,8 +433,8 @@
                  "type":"",
                  "visible":true,
                  "width":0,
-                 "x":1308.66666666667,
-                 "y":475.333333333333
+                 "x":1308.67,
+                 "y":475.333
                 }, 
                 {
                  "ellipse":true,
@@ -445,7 +445,7 @@
                  "type":"",
                  "visible":true,
                  "width":0,
-                 "x":1219.33333333333,
+                 "x":1219.33,
                  "y":472
                 }, 
                 {
@@ -458,7 +458,7 @@
                  "visible":true,
                  "width":0,
                  "x":1794,
-                 "y":293.333333333333
+                 "y":293.333
                 }, 
                 {
                  "ellipse":true,
@@ -470,7 +470,7 @@
                  "visible":true,
                  "width":0,
                  "x":614,
-                 "y":560.666666666667
+                 "y":560.667
                 }, 
                 {
                  "ellipse":true,
@@ -481,8 +481,8 @@
                  "type":"",
                  "visible":true,
                  "width":0,
-                 "x":2102.66666666667,
-                 "y":275.333333333333
+                 "x":2102.67,
+                 "y":275.333
                 }, 
                 {
                  "ellipse":true,
@@ -493,7 +493,7 @@
                  "type":"",
                  "visible":true,
                  "width":0,
-                 "x":62.6666666666667,
+                 "x":62.6667,
                  "y":524
                 }, 
                 {
@@ -1103,8 +1103,65 @@
          "tilewidth":18
         }, 
         {
+         "columns":5,
+         "fillmode":"preserve-aspect-fit",
          "firstgid":181,
-         "source":":\/automap-tiles.tsx"
+         "image":"qrc:\/automap-tiles.svg",
+         "imageheight":32,
+         "imagewidth":160,
+         "margin":0,
+         "name":"AutoMap Rules",
+         "spacing":0,
+         "tilecount":5,
+         "tileheight":32,
+         "tilerendersize":"grid",
+         "tiles":[
+                {
+                 "id":3,
+                 "properties":[
+                        {
+                         "name":"MatchType",
+                         "type":"string",
+                         "value":"Empty"
+                        }]
+                }, 
+                {
+                 "id":1,
+                 "properties":[
+                        {
+                         "name":"MatchType",
+                         "type":"string",
+                         "value":"Ignore"
+                        }]
+                }, 
+                {
+                 "id":2,
+                 "properties":[
+                        {
+                         "name":"MatchType",
+                         "type":"string",
+                         "value":"NonEmpty"
+                        }]
+                }, 
+                {
+                 "id":4,
+                 "properties":[
+                        {
+                         "name":"MatchType",
+                         "type":"string",
+                         "value":"Other"
+                        }]
+                }, 
+                {
+                 "id":0,
+                 "properties":[
+                        {
+                         "name":"MatchType",
+                         "type":"string",
+                         "value":"Negate"
+                        }]
+                }],
+         "tilewidth":32
         }, 
         {
          "columns":10,
