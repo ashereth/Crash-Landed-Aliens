@@ -28,14 +28,7 @@ class Platformer extends Phaser.Scene {
     win() {
         this.scene.start('WinningScene');
     }
-    preload(){
-        //Doing this solely for the coin sprite. Can't find a better way to do this lol
-        this.load.path = "./assets/"
-        this.load.spritesheet("tilemap_sheet", "tilemap_packed.png", {
-            frameWidth: 18,
-            frameHeight: 18
-        })
-    }
+
     create() {
 
         //coin animation
@@ -144,6 +137,8 @@ class Platformer extends Phaser.Scene {
         this.coinGroup.children.iterate((coin)=>{
             coin.play('coinAnim');
         })
+
+
         // set up player avatar
         const spawnPoint = this.map.findObject("Objects", obj => obj.name === "spawn");
         my.sprite.player = this.physics.add.sprite(spawnPoint.x*this.SCALE, spawnPoint.y*this.SCALE, "platformer_characters", "tile_0004.png").setScale(1.5);
@@ -151,16 +146,33 @@ class Platformer extends Phaser.Scene {
         //set a max speed for the player
         my.sprite.player.setMaxVelocity(this.maxSpeed_X, this.maxSpeed_Y);
         my.sprite.player.body.setSize(20, 20);
+
+        // movement vfx
+        my.vfx.walking = this.add.particles(0, 0, "kenny-particles", {
+            frame: ['smoke_03.png', 'smoke_09.png'],
+            // TODO: Try: add random: true
+            scale: {start: 0.05, end: 0.25},
+            // TODO: Try: maxAliveParticles: 8,
+            lifespan: 7000,
+            gravityY: -400,
+            alpha: {start: 1, end: 0.1}, 
+        });
+
+        my.vfx.walking.stop();
+
         // Get the current camera and configure it to follow the player
         this.cameras.main.startFollow(my.sprite.player, true, .1, .1);
-
         // Set the bounds of the camera
         this.cameras.main.setZoom(2);
+
+
         // Enable collision handling
         this.physics.add.collider(my.sprite.player, this.groundLayer);
         this.physics.add.collider(my.sprite.player, this.obstacleLayer, this.gameOver);
         this.physics.add.collider(my.sprite.player, this.winLayer, this.win);
         this.physics.add.overlap(my.sprite.player, this.flyGroup, this.gameOver);
+
+
         //display score
         this.coinsCollected = 0;
         my.text.coinsCollected = this.add.text(370, 250, `Coins collected: ${ this.coinsCollected }/5`, { 
@@ -175,15 +187,16 @@ class Platformer extends Phaser.Scene {
             my.text.coinsCollected.setText(`Coins collected: ${ this.coinsCollected }/5`);
         });
 
+
         // set up Phaser-provided cursor key input
         cursors = this.input.keyboard.createCursorKeys();
+
 
         // debug key listener (assigned to D key)
         this.input.keyboard.on('keydown-D', function() {
             this.physics.world.drawDebug = this.physics.world.drawDebug ? false : true
             this.physics.world.debugGraphic.clear()
         }, this)
-
     }
 
     update() {
@@ -192,15 +205,34 @@ class Platformer extends Phaser.Scene {
             my.sprite.player.resetFlip();
             my.sprite.player.anims.play('walk', true);
 
+            //walking vfx
+            my.vfx.walking.startFollow(my.sprite.player, my.sprite.player.displayWidth/2-10, my.sprite.player.displayHeight/2-5, false);
+            my.vfx.walking.setParticleSpeed(this.PARTICLE_VELOCITY, 0);
+            // Only play smoke effect if touching the ground
+            if (my.sprite.player.body.blocked.down) {
+                //console.log('here');
+                my.vfx.walking.start();
+            }
+
         } else if(cursors.right.isDown) {
             my.sprite.player.body.setAccelerationX(this.ACCELERATION);
             my.sprite.player.setFlip(true, false);
             my.sprite.player.anims.play('walk', true);
 
+            //walking vfx
+            my.vfx.walking.startFollow(my.sprite.player, my.sprite.player.displayWidth/2-10, my.sprite.player.displayHeight/2-5, false);
+            my.vfx.walking.setParticleSpeed(this.PARTICLE_VELOCITY, 0);
+            // Only play smoke effect if touching the ground
+            if (my.sprite.player.body.blocked.down) {
+                //console.log('here');
+                my.vfx.walking.start();
+            }
+
         } else {
             my.sprite.player.body.setAccelerationX(0);
             my.sprite.player.body.setDragX(this.DRAG);
             my.sprite.player.anims.play('idle');
+            my.vfx.walking.stop();//stop walking vfx
         }
 
         // player jump
