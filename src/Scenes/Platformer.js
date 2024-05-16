@@ -287,7 +287,6 @@ class Platformer extends Phaser.Scene {
             my.vfx.walking.setParticleSpeed(this.PARTICLE_VELOCITY, 0);
             // Only play smoke effect if touching the ground
             if (my.sprite.player.body.blocked.down) {
-                console.log('here');
                 my.vfx.walking.start();
             }
 
