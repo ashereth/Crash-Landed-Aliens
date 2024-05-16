@@ -17,6 +17,8 @@ class Platformer extends Phaser.Scene {
         this.maxSpeed_X = 200;
         this.maxSpeed_Y = 1000;
         this.SCALE = 2;
+        this.PARTICLE_VELOCITY = 50;
+
     }
     //send player to game over scene
     gameOver() {
@@ -30,6 +32,18 @@ class Platformer extends Phaser.Scene {
     }
 
     create() {
+
+        //create array for all the footstep sounds
+        this.footsteps = [
+            this.sound.add('footstep1'),
+            this.sound.add('footstep2'),
+            this.sound.add('footstep3'),
+            this.sound.add('footstep4'),
+            this.sound.add('footstep5')
+        ];
+        //create coin sounds
+        this.coinSound = this.sound.add('coinSound');
+        this.jumpSound = this.sound.add('jumpSound');
 
         //coin animation
         this.anims.create({
@@ -147,18 +161,6 @@ class Platformer extends Phaser.Scene {
         my.sprite.player.setMaxVelocity(this.maxSpeed_X, this.maxSpeed_Y);
         my.sprite.player.body.setSize(20, 20);
 
-        // movement vfx
-        my.vfx.walking = this.add.particles(0, 0, "kenny-particles", {
-            frame: ['smoke_03.png', 'smoke_09.png'],
-            // TODO: Try: add random: true
-            scale: {start: 0.05, end: 0.25},
-            // TODO: Try: maxAliveParticles: 8,
-            lifespan: 7000,
-            gravityY: -400,
-            alpha: {start: 1, end: 0.1}, 
-        });
-
-        my.vfx.walking.stop();
 
         // Get the current camera and configure it to follow the player
         this.cameras.main.startFollow(my.sprite.player, true, .1, .1);
@@ -180,10 +182,25 @@ class Platformer extends Phaser.Scene {
             fontSize: '18px',
             color: '#000000'
         }).setScrollFactor(0);
+        //coin pickup vfx
+        my.vfx.coinPickup = this.add.particles(0, 0, "kenny-particles", {
+            frame: ['magic_04.png', 'magic_05.png'],
+            random: true,
+            scale: .3,
+            // TODO: Try: maxAliveParticles: 8,
+            lifespan: 500,
+            // TODO: Try: gravityY: -400,
+            alpha: {start: 1, end: 0.1}, 
+        });
+
         //coins and player should overlap not collide
-        this.physics.add.overlap(my.sprite.player, this.coinGroup, (obj1, obj2) => {
-            obj2.destroy();
+        this.physics.add.overlap(my.sprite.player, this.coinGroup, (player, coin) => {
+            coin.destroy();
             this.coinsCollected += 1;
+            my.vfx.coinPickup.emitParticleAt(coin.x, coin.y);
+            my.vfx.coinPickup.start();
+            this.coinSound.play();
+
             my.text.coinsCollected.setText(`Coins collected: ${ this.coinsCollected }/5`);
         });
 
@@ -197,20 +214,66 @@ class Platformer extends Phaser.Scene {
             this.physics.world.drawDebug = this.physics.world.drawDebug ? false : true
             this.physics.world.debugGraphic.clear()
         }, this)
+
+
+        // Movement VFX
+        my.vfx.walking = this.add.particles(0, 0, "kenny-particles", {
+            frame: ['smoke_03.png', 'smoke_09.png'],
+            // TODO: Try: add random: true
+            scale: {start: 0.03, end: 0.1},
+            // TODO: Try: maxAliveParticles: 8,
+            lifespan: 350,
+            gravityY: -400,
+            alpha: {start: 1, end: 0.1}, 
+        });
+
+        my.vfx.walking.stop();
+        this.isRunning = false;
+
+    }
+    //method to play running sound
+    playRunningAudio() {
+        const randomIndex = Phaser.Math.Between(0, this.footsteps.length - 1);
+        const footstepSound = this.footsteps[randomIndex];
+        if (!footstepSound.isPlaying) {
+            footstepSound.play();
+        }
     }
 
     update() {
+        //stop walking vfx if off ground
+        if (!my.sprite.player.body.blocked.down) {
+            my.vfx.walking.stop();
+        }
+
+        //for playing running noise
+        if ((cursors.left.isDown || cursors.right.isDown) && my.sprite.player.body.blocked.down) {
+            if (!this.isRunning) {
+                this.isRunning = true;
+                this.runEvent = this.time.addEvent({
+                    delay: 150, // milliseconds between each footstep sound
+                    callback: this.playRunningAudio,
+                    callbackScope: this,
+                    loop: true
+                });
+            }
+        } else {
+            if (this.isRunning) {
+                this.isRunning = false;
+                this.runEvent.remove(false);
+            }
+        }
         if(cursors.left.isDown) {
             my.sprite.player.body.setAccelerationX(-this.ACCELERATION);
             my.sprite.player.resetFlip();
             my.sprite.player.anims.play('walk', true);
 
             //walking vfx
-            my.vfx.walking.startFollow(my.sprite.player, my.sprite.player.displayWidth/2-10, my.sprite.player.displayHeight/2-5, false);
+            my.vfx.walking.startFollow(my.sprite.player, my.sprite.player.displayWidth/2-10, my.sprite.player.displayHeight/2, false);
             my.vfx.walking.setParticleSpeed(this.PARTICLE_VELOCITY, 0);
             // Only play smoke effect if touching the ground
             if (my.sprite.player.body.blocked.down) {
-                //console.log('here');
+                //play walking vfx and sound
                 my.vfx.walking.start();
             }
 
@@ -220,11 +283,11 @@ class Platformer extends Phaser.Scene {
             my.sprite.player.anims.play('walk', true);
 
             //walking vfx
-            my.vfx.walking.startFollow(my.sprite.player, my.sprite.player.displayWidth/2-10, my.sprite.player.displayHeight/2-5, false);
+            my.vfx.walking.startFollow(my.sprite.player, my.sprite.player.displayWidth/2-30, my.sprite.player.displayHeight/2, false);
             my.vfx.walking.setParticleSpeed(this.PARTICLE_VELOCITY, 0);
             // Only play smoke effect if touching the ground
             if (my.sprite.player.body.blocked.down) {
-                //console.log('here');
+                console.log('here');
                 my.vfx.walking.start();
             }
 
@@ -241,6 +304,7 @@ class Platformer extends Phaser.Scene {
             my.sprite.player.anims.play('jump');
         }
         if(my.sprite.player.body.blocked.down && Phaser.Input.Keyboard.JustDown(cursors.up)) {
+            this.jumpSound.play();
             my.sprite.player.body.setVelocityY(this.JUMP_VELOCITY);
         }
     }

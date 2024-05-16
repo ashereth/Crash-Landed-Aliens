@@ -20,6 +20,14 @@ class Load extends Phaser.Scene {
         });
         this.load.multiatlas("kenny-particles", "kenny-particles.json");
 
+        this.load.audio('footstep1', 'audio/footstep_concrete_000.ogg');
+        this.load.audio('footstep2', 'audio/footstep_concrete_001.ogg');
+        this.load.audio('footstep3', 'audio/footstep_concrete_002.ogg');
+        this.load.audio('footstep4', 'audio/footstep_concrete_003.ogg');
+        this.load.audio('footstep5', 'audio/footstep_concrete_004.ogg');
+        this.load.audio('coinSound', 'audio/impactMining_003.ogg');
+        this.load.audio('jumpSound', 'audio/impactPunch_medium_000.ogg');
+
     }
 
     create() {
