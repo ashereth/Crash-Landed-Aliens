@@ -4,6 +4,8 @@ class Load extends Phaser.Scene {
     }
 
     preload() {
+        
+
         this.load.setPath("./assets/");
 
         // Load characters spritesheet
@@ -27,7 +29,6 @@ class Load extends Phaser.Scene {
         this.load.audio('footstep5', 'audio/footstep_concrete_004.ogg');
         this.load.audio('coinSound', 'audio/impactMining_003.ogg');
         this.load.audio('jumpSound', 'audio/impactPunch_medium_000.ogg');
-
     }
 
     create() {

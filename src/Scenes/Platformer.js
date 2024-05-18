@@ -6,6 +6,10 @@ class Platformer extends Phaser.Scene {
 
     }
 
+    preload() {
+        this.load.scenePlugin('AnimatedTiles', './lib/AnimatedTiles.js', 'animatedTiles', 'animatedTiles');
+    }
+
     init() {
         // variables and settings
         this.ACCELERATION = 500;
@@ -20,6 +24,7 @@ class Platformer extends Phaser.Scene {
         this.PARTICLE_VELOCITY = 50;
 
     }
+
     //send player to game over scene
     gameOver() {
 
@@ -32,6 +37,13 @@ class Platformer extends Phaser.Scene {
     }
 
     create() {
+        //coin animation
+        this.anims.create({
+            key: 'coinAnim',
+            frames: this.anims.generateFrameNumbers('tilemap_sheet', {start: 151, end: 152}),
+            repeat: -1,
+            frameRate: 5
+        });
 
         //create array for all the footstep sounds
         this.footsteps = [
@@ -45,13 +57,6 @@ class Platformer extends Phaser.Scene {
         this.coinSound = this.sound.add('coinSound');
         this.jumpSound = this.sound.add('jumpSound');
 
-        //coin animation
-        this.anims.create({
-            key: 'coinAnim',
-            frames: this.anims.generateFrameNumbers('tilemap_sheet', {start: 151, end: 152}),
-            repeat: -1,
-            frameRate: 5
-        });
         //fly animation
         this.anims.create({
             key: 'flyAnim',
@@ -71,6 +76,7 @@ class Platformer extends Phaser.Scene {
         // Create a new tilemap game object which uses 18x18 pixel tiles, and is
         // 135 tiles wide and 40 tiles tall.
         this.map = this.add.tilemap("platformer-level-1", 18, 18, 135, 40);
+        this.animatedTiles.init(this.map)
 
         // Add a tileset to the map
         // First parameter: name we gave the tileset in Tiled
@@ -147,11 +153,11 @@ class Platformer extends Phaser.Scene {
         this.coins.map((coin) => {
             coin.body.setCircle(10).setOffset(6, 6);
         });
+
         //add animation to coins
         this.coinGroup.children.iterate((coin)=>{
             coin.play('coinAnim');
         })
-
 
         // set up player avatar
         const spawnPoint = this.map.findObject("Objects", obj => obj.name === "spawn");
