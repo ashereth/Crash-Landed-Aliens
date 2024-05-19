@@ -6,4 +6,3 @@ As a bonus try to find all 5 golden coins before reaching the finish.
 
 ## Assets
 All assets are from [Kenney Assets](https://kenney.nl/).
-## `Unfinished!!`
