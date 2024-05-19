@@ -93,7 +93,7 @@ class Platformer extends Phaser.Scene {
         this.winLayer.setScale(this.SCALE);
         this.obstacleLayer.setScale(this.SCALE);
         this.backgroundLayer.setScale(this.SCALE);
-        this.extraLayer.setScale(this.SCALE)
+        this.extraLayer.setScale(this.SCALE);
         this.groundLayer.setScale(this.SCALE);
 
         //set collides for ground
@@ -236,6 +236,16 @@ class Platformer extends Phaser.Scene {
         my.vfx.walking.stop();
         this.isRunning = false;
 
+        // Jumping VFX
+        my.vfx.jump = this.add.particles(0, 0, "kenny-particles", {
+            frame: ['muzzle_01.png'],
+            // TODO: Try: add random: true
+            scale: .15,
+            // TODO: Try: maxAliveParticles: 8,
+            lifespan: 250,
+            alpha: {start: .8, end: 0.1}, 
+        });
+
     }
     //method to play running sound
     playRunningAudio() {
@@ -311,6 +321,9 @@ class Platformer extends Phaser.Scene {
         if(my.sprite.player.body.blocked.down && Phaser.Input.Keyboard.JustDown(cursors.up)) {
             this.jumpSound.play();
             my.sprite.player.body.setVelocityY(this.JUMP_VELOCITY);
+
+            my.vfx.jump.emitParticleAt(my.sprite.player.x, my.sprite.player.y);
+            my.vfx.jump.start();
         }
     }
 }
